@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- import Vue before Element -->
+    <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <title>学生管理系统</title>
+</head>
+<style>
+    .el-header, .el-footer {
+        background-color: #B3C0D1;
+        color: #333;
+        text-align: center;
+    }
+
+    .el-aside {
+        background-color: #D3DCE6;
+        color: #333;
+        text-align: center;
+    }
+
+    .el-main {
+        background-color: #E9EEF3;
+        color: #333;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    a {
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: blueviolet;
+    }
+</style>
+<body style="overflow: hidden;margin: 0">
+<div id="app" style="overflow: hidden">
+    <el-container style="height: 100vh;width: 100vw;">
+        <el-header height="80px">
+            <h1 style="margin-top: 0;font-size: 50px;">学生管理系统</h1>
+        </el-header>
+        <el-container>
+            <el-aside width="200px">
+                <p style="margin-bottom: 50px;margin-top: 100px"><a th:href="@{/}">首页</a></p>
+                <p style="margin-bottom: 50px"><a th:href="@{/to/query/student/page/1}">查询</a></p>
+                <p style="margin-bottom: 50px"><a th:href="@{/to/add/student/page}">添加</a></p>
+                <p style="margin-bottom: 50px"><a th:href="@{/to/add/major/page}">专业维护</a></p>
+                <p style="margin-bottom: 50px"><a th:href="@{/to/add/address/page}">户籍维护</a></p>
+                <p style="margin-bottom: 50px"><a th:href="@{/quit}">退出系统</a></p>
+            </el-aside>
+            <el-main>
+                <form th:action="@{/add/major}" method="post"
+                      style="width: 300px;height: 200px;position: absolute;left: 50%;top: 50%;margin-top: -150px;margin-left: -150px">
+                    学院：
+                    <select id="majorCollege" name="majorCollege" v-model="majorCollege" style="width: 60%;">
+                        <option v-for="(college,index) in colleges">{{college}}</option>
+                    </select>
+                    <br>
+                    <span style="color: red;font-size: 10px">{{majorCollegeError}}</span>
+                    <br>
+                    专业：
+                    <input type="text" id="majorName" name="majorName" v-model="majorName">
+                    <br>
+                    <span style="color: red;font-size: 10px">{{majorNameError}}</span>
+                    <br>
+                    <input type="submit" value="添加新专业" @click="checkForm()">
+                    <br>
+                    <span style="color: red;font-size: 10px">[[${addMajorResult}]]</span>
+                </form>
+            </el-main>
+        </el-container>
+        <el-footer>
+            <h2>Create By @AntonyCheng</h2>
+        </el-footer>
+    </el-container>
+</div>
+</body>
+<script>
+    let vue = new Vue({
+        el: '#app',
+        data: {
+            colleges: [
+                "计算机与信息工程学院", "经济学院", "财政与公共管理学院", "金融学院", "管理学院",
+                "食品工程学院", "轻工学院", "会计学院", "能源与建筑学院", "旅游烹饪学院",
+                "药学院", "法学院", "外语学院", "设计艺术学院", "马克思学院",
+                "基础科学学院", "体育学院", "国际教育学院", "英才学院", "职业教育学院", "商务学院"
+            ],
+            majorCollege: "",
+            majorCollegeError: "",
+            majorName: "",
+            majorNameError: ""
+        },
+        methods: {
+            checkForm() {
+                this.majorCollegeError = ""
+                this.majorNameError = ""
+                let reg = /^[\u4E00-\u9FA5]*$/
+                if (this.majorCollege === "") {
+                    this.majorCollegeError = "请选择你所在的学院"
+                    event.preventDefault()
+                }
+                if (this.majorName === "" || !reg.test(this.majorName)) {
+                    this.majorNameError = "你输入的专业格式有误！"
+                    event.preventDefault()
+                }
+            }
+        }
+    });
+</script>
+</html>

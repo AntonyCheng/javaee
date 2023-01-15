@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- import Vue before Element -->
+    <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <title>学生管理系统</title>
+</head>
+<style>
+    .el-header, .el-footer {
+        background-color: #B3C0D1;
+        color: #333;
+        text-align: center;
+    }
+
+    .el-aside {
+        background-color: #D3DCE6;
+        color: #333;
+        text-align: center;
+    }
+
+    .el-main {
+        background-color: #E9EEF3;
+        color: #333;
+        font-weight: bold;
+    }
+
+    a {
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: blueviolet;
+    }
+</style>
+<body style="overflow: hidden;margin: 0">
+<div id="app" style="overflow: hidden">
+    <el-container style="height: 100vh;width: 100vw;">
+        <el-header height="80px">
+            <h1 style="margin-top: 0;font-size: 50px;">学生管理系统</h1>
+        </el-header>
+        <el-container>
+            <el-aside width="200px">
+                <p style="margin-bottom: 50px;margin-top: 100px"><a th:href="@{/}">首页</a></p>
+                <p style="margin-bottom: 50px"><a th:href="@{/to/query/student/page/1}">查询</a></p>
+                <p style="margin-bottom: 50px"><a th:href="@{/to/add/student/page}">添加</a></p>
+                <p style="margin-bottom: 50px"><a th:href="@{/to/add/major/page}">专业维护</a></p>
+                <p style="margin-bottom: 50px"><a th:href="@{/to/add/address/page}">户籍维护</a></p>
+                <p style="margin-bottom: 50px"><a th:href="@{/quit}">退出系统</a></p>
+            </el-aside>
+            <el-main>
+                <form th:action="@{/add/student}" method="post"
+                      style="width: 300px;height: 500px;position: absolute;left: 50%;top: 50%;margin-top: -250px;margin-left: -150px">
+                    学号：<input type="text" name="studentId" v-model="studentId">
+                    <br>
+                    <span style="color: red;font-size: 10px">{{studentIdError}}</span>
+                    <br>
+                    姓名：<input type="text" name="studentName" v-model="studentName">
+                    <br>
+                    <span style="color: red;font-size: 10px">{{studentNameError}}</span>
+                    <br>
+                    性别：<input type="radio" name="studentGender" value="男" checked>男
+                    <input type="radio" name="studentGender" value="女">女
+                    <br>
+                    <br>
+                    出生日期：<input type="date" name="studentBirthday" v-model="studentBirthday">
+                    <br>
+                    <span style="color: red;font-size: 10px">{{studentBirthdayError}}</span>
+                    <br>
+                    年级：
+                    <select id="studentGrade" name="studentGrade">
+                        <option value="2018">2018</option>
+                        <option value="2019">2019</option>
+                        <option value="2020">2020</option>
+                        <option value="2021">2021</option>
+                        <option value="2022">2022</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                    </select>
+                    <br>
+                    <br>
+                    学院：
+                    <select id="studentCollege" name="studentCollege" v-model="studentCollege" @blur="initMajor()"
+                            @click="flushMajor()">
+                        <option v-for="(college,index) in colleges">{{college}}</option>
+                    </select>
+                    <br>
+                    <span style="color: red;font-size: 10px">{{studentCollegeError}}</span>
+                    <br>
+                    专业：
+                    <select id="studentMajor" name="studentMajor" v-model="studentMajor" style="width: 60%;">
+                        <option v-for="(major,index) in majors">{{major}}</option>
+                    </select>
+                    <br>
+                    <span style="color: red;font-size: 10px">{{studentMajorError}}</span>
+                    <br>
+                    手机号码：<input type="text" name="studentPhone" v-model="studentPhone">
+                    <br>
+                    <span style="color: red;font-size: 10px">{{studentPhoneError}}</span>
+                    <br>
+                    籍贯省（直辖市）：
+                    <select id="studentProvince" name="studentProvince" v-model="studentProvince" @blur="initAddress()"
+                            @click="flushAddress()">
+                        <option v-for="(province,index) in provinces">{{province}}</option>
+                    </select>
+                    <br>
+                    <span style="color: red;font-size: 10px">{{studentProvinceError}}</span>
+                    <br>
+                    籍贯市（区/街道）：
+                    <select id="studentCity" name="studentCity" v-model="studentCity" style="width: 40%;">
+                        <option v-for="(city,index) in cities">{{city}}</option>
+                    </select>
+                    <br>
+                    <span style="color: red;font-size: 10px">{{studentCityError}}</span>
+                    <br>
+                    <input type="submit" value="添加学生信息" @click="checkForm()">
+                    <br>
+                    <span style="color: red;font-size: 10px">[[${addError}]]</span>
+                </form>
+            </el-main>
+        </el-container>
+        <el-footer>
+            <h2>Create By @AntonyCheng</h2>
+        </el-footer>
+    </el-container>
+</div>
+</body>
+<script>
+    let vue = new Vue({
+        el: '#app',
+        data: {
+            colleges: [
+                "计算机与信息工程学院", "经济学院", "财政与公共管理学院", "金融学院", "管理学院",
+                "食品工程学院", "轻工学院", "会计学院", "能源与建筑学院", "旅游烹饪学院",
+                "药学院", "法学院", "外语学院", "设计艺术学院", "马克思学院",
+                "基础科学学院", "体育学院", "国际教育学院", "英才学院", "职业教育学院", "商务学院"
+            ],
+            provinces: [
+                "河北省", "山西省", "辽宁省", "吉林省", "黑龙江省", "江苏省", "浙江省",
+                "安徽省", "福建省", "江西省", "山东省", "河南省", "湖北省", "湖南省",
+                "广东省", "海南省", "四川省", "贵州省", "云南省", "陕西省", "甘肃省",
+                "青海省", "台湾省", "内蒙古自治区", "广西壮族自治区", "西藏自治区",
+                "宁夏回族自治区", "新疆维吾尔自治区", "北京市", "天津市", "上海市",
+                "重庆市", "香港特别行政区", "澳门特别行政区"
+            ],
+            majors: [],
+            cities: [],
+            studentCollege: "",
+            studentCollegeError: "",
+            studentMajor: "",
+            studentMajorError: "",
+            studentProvince: "",
+            studentProvinceError: "",
+            studentCity: "",
+            studentCityError: "",
+            studentId: "",
+            studentIdError: "",
+            studentName: "",
+            studentNameError: "",
+            studentBirthday: "",
+            studentBirthdayError: "",
+            studentPhone: "",
+            studentPhoneError: "",
+        },
+        methods: {
+            flushMajor() {
+                this.majors = [];
+            },
+            initMajor() {
+                axios({
+                    "method": "get",
+                    "url": "[[@{/init/major}]]",
+                    "params": {
+                        "studentCollege": this.studentCollege
+                    },
+                }).then(
+                    response => {
+                        this.majors = response.data
+                    }
+                ).catch(
+                    error => {
+                        console.log(error.data)
+                    }
+                )
+            },
+            flushAddress() {
+                this.cities = [];
+            },
+            initAddress() {
+                axios({
+                    "method": "get",
+                    "url": "[[@{/init/address}]]",
+                    "params": {
+                        "studentProvince": this.studentProvince
+                    },
+                }).then(
+                    response => {
+                        this.cities = response.data
+                    }
+                ).catch(
+                    error => {
+                        console.log(error.data)
+                    }
+                )
+            },
+            checkForm() {
+                this.studentIdError = ""
+                this.studentNameError = ""
+                this.studentBirthdayError = ""
+                this.studentCollegeError = ""
+                this.studentMajorError = ""
+                this.studentPhoneError = ""
+                this.studentProvinceError = ""
+                this.studentCityError = ""
+                let regOfId = /^[0-9]*$/
+                let regOfName = /^[\u4E00-\u9FA5]+(·[\u4E00-\u9FA5]+)*$/
+                let regOfPhone = /^1(3\d|4[5-9]|5[0-35-9]|6[2567]|7[0-8]|8\d|9[0-35-9])\d{8}$/
+                if (this.studentId === "" || !regOfId.test(this.studentId)) {
+                    this.studentIdError = "学号只能包含数字"
+                    event.preventDefault()
+                }
+                if (this.studentName === "" || !regOfName.test(this.studentName)) {
+                    this.studentNameError = "姓名不能带有无关字符"
+                    event.preventDefault()
+                }
+                if (this.studentBirthday === "") {
+                    this.studentBirthdayError = "出生日期不能为空"
+                    event.preventDefault()
+                }
+                if (this.studentCollege === "") {
+                    this.studentCollegeError = "学院不能为空"
+                    event.preventDefault()
+                }
+                if (this.studentMajor === "") {
+                    this.studentMajorError = "专业不能为空"
+                    event.preventDefault()
+                }
+                if (this.studentPhone === "" || !regOfPhone.test(this.studentPhone)) {
+                    this.studentPhoneError = "手机格式不正确"
+                    event.preventDefault()
+                }
+                if (this.studentProvince === "") {
+                    this.studentProvinceError = "省份不能为空"
+                    event.preventDefault()
+                }
+                if (this.studentCity === "") {
+                    this.studentCityError = "具体城市不能为空"
+                    event.preventDefault()
+                }
+            }
+        }
+    });
+</script>
+</html>

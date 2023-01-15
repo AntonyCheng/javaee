@@ -1,0 +1,24 @@
+spring:
+  thymeleaf:
+    cache: false
+  datasource:
+    druid:
+      username: root
+      password: root
+      url: jdbc:mysql://localhost:3306/javaee?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowMultiQueries=true&allowPublicKeyRetrieval=true
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      max-active: 20
+      initial-size: 10
+      min-idle: 2
+      max-wait: 1000
+
+mybatis:
+  type-aliases-package: top.sharehome.javaee.bean
+  mapper-locations: classpath:mapper/*.xml
+
+logging:
+  level:
+    top:
+      sharehome:
+        javaee:
+          mapper: debug
